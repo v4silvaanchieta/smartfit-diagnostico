@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrega Final - Diagnóstico e Planejamento</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Montserrat', 'sans-serif'],
+                    },
+                    colors: {
+                        clientPrimary: '#FFB612', /* Amarelo Smartfit */
+                        clientSecondary: '#000000', /* Preto Smartfit */
+                        v4Red: '#E50914',
+                        neutralLight: '#F3F4F6',
+                        neutralDark: '#1F2937'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Curvas de Easing Avançadas para fluidez extrema */
+        :root {
+            --smooth-easing: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Classes de Revelação Dinâmica */
+        .reveal-up {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 1s var(--smooth-easing), transform 1s var(--smooth-easing);
+        }
+        .reveal-left {
+            opacity: 0;
+            transform: translateX(-40px);
+            transition: opacity 1s var(--smooth-easing), transform 1s var(--smooth-easing);
+        }
+        .reveal-right {
+            opacity: 0;
+            transform: translateX(40px);
+            transition: opacity 1s var(--smooth-easing), transform 1s var(--smooth-easing);
+        }
+        .reveal-scale {
+            opacity: 0;
+            transform: scale(0.9);
+            transition: opacity 1s var(--smooth-easing), transform 1s var(--smooth-easing);
+        }
+        
+        /* Estado Ativo das Revelações */
+        .reveal-up.visible, .reveal-left.visible, .reveal-right.visible, .reveal-scale.visible {
+            opacity: 1;
+            transform: translate(0) scale(1);
+        }
+
+        /* Staggers (Atrasos em cascata) */
+        .delay-100 { transition-delay: 100ms; }
+        .delay-200 { transition-delay: 200ms; }
+        .delay-300 { transition-delay: 300ms; }
+        .delay-400 { transition-delay: 400ms; }
+
+        /* Animações Contínuas */
+        @keyframes bg-zoom {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.15); }
+        }
+        .animate-bg-zoom {
+            animation: bg-zoom 25s infinite alternate ease-in-out;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 182, 18, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 20px rgba(255, 182, 18, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 182, 18, 0); }
+        }
+        .animate-pulse-ring {
+            animation: pulse-ring 2.5s infinite var(--smooth-easing);
+        }
+
+        @keyframes slide-right {
+            0% { transform: translateX(0); opacity: 0.5; }
+            50% { transform: translateX(5px); opacity: 1; }
+            100% { transform: translateX(0); opacity: 0.5; }
+        }
+        .arrow-flow {
+            animation: slide-right 1.5s infinite ease-in-out;
+        }
+
+        /* Timeline Customizada CSS */
+        .timeline-container { position: relative; }
+        .timeline-line::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #e5e7eb 0%, #FFB612 80%, #e5e7eb 100%);
+            z-index: 0;
+            transform: translateY(-50%);
+            border-radius: 2px;
+        }
+        @media (max-width: 768px) {
+            .timeline-line::before {
+                top: 0;
+                bottom: 0;
+                left: 22px; /* Centro exato do ícone de 48px */
+                width: 4px;
+                height: 100%;
+                right: auto;
+                transform: none;
+                background: linear-gradient(180deg, #e5e7eb 0%, #FFB612 80%, #e5e7eb 100%);
+            }
+        }
+
+        /* Efeito Glassmorphism do Header */
+        .glass-header {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        /* Botão com brilho (Sweep) */
+        .btn-shine {
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-shine::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+            transform: skewX(-20deg);
+            transition: all 0.7s ease;
+        }
+        .btn-shine:hover::after {
+            left: 150%;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased text-gray-800 bg-white selection:bg-clientPrimary selection:text-black overflow-x-hidden">
+
+    <!-- Barra de Progresso de Leitura -->
+    <div id="progress-bar" class="fixed top-0 left-0 h-1 bg-clientPrimary z-[60] w-0 transition-all duration-100 ease-out"></div>
+
+    <!-- Header Fixo Centralizado -->
+    <header id="main-header" class="fixed top-0 left-0 w-full z-50 py-4 px-6 flex items-center justify-center gap-6 md:gap-10 transition-all duration-500 bg-white shadow-sm">
+        <img src="https://brand.v4company.com/_next/image?url=%2Fimages%2Flogos%2Fsimbolo-company.webp&w=256&q=75" alt="Logo V4 Company" class="h-8 md:h-10 object-contain transition-transform duration-300 hover:scale-105">
+        
+        <div class="h-8 w-px bg-gray-200 rounded-full"></div> <!-- Linha divisória sutil -->
+        
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Smart_Fit_logo.svg/1280px-Smart_Fit_logo.svg.png" alt="Logo Smart Fit" class="h-6 md:h-9 object-contain transition-transform duration-300 hover:scale-105">
+    </header>
+
+    <!-- Main Content -->
+    <main class="pt-[72px]">
+
+        <!-- Hero Section -->
+        <section class="bg-clientSecondary text-white py-32 px-6 text-center flex flex-col items-center justify-center min-h-[70vh] relative overflow-hidden">
+            <div class="absolute inset-0 opacity-20 bg-[url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center animate-bg-zoom"></div>
+            <!-- Gradiente sobreposto para melhor contraste -->
+            <div class="absolute inset-0 bg-gradient-to-b from-black/60 to-black/20"></div>
+            
+            <div class="relative z-10 max-w-4xl">
+                <i class="fa-solid fa-dumbbell text-clientPrimary text-5xl md:text-6xl mb-8 reveal-scale"></i>
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-extrabold mb-6 uppercase tracking-tight leading-tight reveal-up delay-100">
+                    O Ecossistema da <br><span class="text-clientPrimary drop-shadow-[0_0_15px_rgba(255,182,18,0.3)]">Alta Performance</span>
+                </h1>
+                <p class="text-xl md:text-3xl font-light text-gray-300 reveal-up delay-200 max-w-2xl mx-auto">
+                    A maior rede da América Latina, conectada no seu ritmo.
+                </p>
+            </div>
+            
+            <!-- Indicador de Scroll -->
+            <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 text-gray-400 opacity-70 z-20">
+                <div class="reveal-up delay-300 flex flex-col items-center">
+                    <span class="text-xs uppercase tracking-widest mb-2">Descubra</span>
+                    <i class="fa-solid fa-chevron-down animate-bounce"></i>
+                </div>
+            </div>
+        </section>
+
+        <!-- Timeline Section -->
+        <section class="bg-neutralLight py-24 px-6 relative overflow-hidden">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-20 reveal-up">
+                    <h2 class="text-3xl md:text-4xl font-extrabold text-clientSecondary uppercase tracking-wide">Tudo que você aprendeu no projeto</h2>
+                    <div class="w-24 h-1.5 bg-clientPrimary rounded-full mx-auto mt-6"></div>
+                </div>
+
+                <div class="timeline-container relative timeline-line md:flex md:justify-between flex-col md:flex-row gap-8 md:gap-0 pt-4 md:pt-0">
+                    
+                    <!-- Passos 1 ao 4 -->
+                    <div class="relative z-10 flex flex-row md:flex-col items-center md:w-1/5 mb-8 md:mb-0 group reveal-up delay-100 cursor-default">
+                        <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-gray-400 font-bold text-xl mb-0 md:mb-5 border-4 border-gray-200 shadow-md transition-all duration-300 group-hover:border-gray-300 group-hover:scale-110">1</div>
+                        <div class="ml-6 md:ml-0 text-left md:text-center transition-all duration-300 group-hover:-translate-y-1">
+                            <h3 class="font-bold text-gray-500 uppercase text-xs tracking-wider mb-1">Semana 1</h3>
+                            <p class="text-sm font-semibold text-gray-800 leading-tight">Kick-Off e<br>Oferta Principal</p>
+                        </div>
+                    </div>
+
+                    <div class="relative z-10 flex flex-row md:flex-col items-center md:w-1/5 mb-8 md:mb-0 group reveal-up delay-200 cursor-default">
+                        <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-gray-400 font-bold text-xl mb-0 md:mb-5 border-4 border-gray-200 shadow-md transition-all duration-300 group-hover:border-gray-300 group-hover:scale-110">2</div>
+                        <div class="ml-6 md:ml-0 text-left md:text-center transition-all duration-300 group-hover:-translate-y-1">
+                            <h3 class="font-bold text-gray-500 uppercase text-xs tracking-wider mb-1">Semana 2</h3>
+                            <p class="text-sm font-semibold text-gray-800 leading-tight">Pesquisa de Mercado<br>& Posicionamento</p>
+                        </div>
+                    </div>
+
+                    <div class="relative z-10 flex flex-row md:flex-col items-center md:w-1/5 mb-8 md:mb-0 group reveal-up delay-300 cursor-default">
+                        <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-gray-400 font-bold text-xl mb-0 md:mb-5 border-4 border-gray-200 shadow-md transition-all duration-300 group-hover:border-gray-300 group-hover:scale-110">3</div>
+                        <div class="ml-6 md:ml-0 text-left md:text-center transition-all duration-300 group-hover:-translate-y-1">
+                            <h3 class="font-bold text-gray-500 uppercase text-xs tracking-wider mb-1">Semana 3</h3>
+                            <p class="text-sm font-semibold text-gray-800 leading-tight">Diagnóstico<br>de Marketing</p>
+                        </div>
+                    </div>
+
+                    <div class="relative z-10 flex flex-row md:flex-col items-center md:w-1/5 mb-8 md:mb-0 group reveal-up delay-400 cursor-default">
+                        <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-gray-400 font-bold text-xl mb-0 md:mb-5 border-4 border-gray-200 shadow-md transition-all duration-300 group-hover:border-gray-300 group-hover:scale-110">4</div>
+                        <div class="ml-6 md:ml-0 text-left md:text-center transition-all duration-300 group-hover:-translate-y-1">
+                            <h3 class="font-bold text-gray-500 uppercase text-xs tracking-wider mb-1">Semana 4</h3>
+                            <p class="text-sm font-semibold text-gray-800 leading-tight">Diagnóstico<br>de Comercial</p>
+                        </div>
+                    </div>
+
+                    <!-- Passo 5 (Destaque) -->
+                    <div class="relative z-10 flex flex-row md:flex-col items-center md:w-1/5 group reveal-scale delay-500 cursor-default">
+                        <div class="w-16 h-16 rounded-full bg-clientPrimary flex items-center justify-center text-clientSecondary font-black text-2xl mb-0 md:mb-4 -ml-[2px] md:ml-0 border-4 border-white shadow-xl ring-4 ring-clientPrimary/20 animate-pulse-ring z-20">5</div>
+                        <div class="ml-4 md:ml-0 text-left md:text-center bg-white md:bg-transparent p-4 md:p-0 rounded-xl shadow-lg md:shadow-none border md:border-none border-clientPrimary/30 transition-transform duration-300 hover:-translate-y-2">
+                            <h3 class="font-extrabold text-clientPrimary text-sm uppercase tracking-widest mb-1">Semana 5</h3>
+                            <p class="text-base font-black text-clientSecondary uppercase leading-tight bg-clientPrimary/10 md:bg-transparent px-2 md:px-0 py-1 rounded">Plano de Marketing e Vendas</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Três Pilares (Estratégia) Section -->
+        <section class="bg-white py-24 px-6 relative">
+            <!-- Background decors -->
+            <div class="absolute top-0 right-0 w-64 h-64 bg-clientPrimary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+            
+            <div class="max-w-6xl mx-auto">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    
+                    <!-- Card 1 -->
+                    <div class="bg-white p-8 md:p-10 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 transition-all duration-500 hover:-translate-y-3 hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:border-clientPrimary/30 reveal-up relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-clientPrimary/20 to-transparent rounded-bl-full -z-10 transition-transform duration-500 group-hover:scale-125"></div>
+                        <div class="w-16 h-16 bg-clientPrimary/10 rounded-2xl flex items-center justify-center text-clientPrimary text-2xl mb-8 transform transition-transform duration-300 group-hover:rotate-6">
+                            <i class="fa-solid fa-rocket"></i>
+                        </div>
+                        <h3 class="text-xl font-extrabold mb-4 text-clientSecondary leading-tight">1. Autonomia de Vendas <span class="text-xs text-gray-500 font-semibold block mt-1 tracking-wider uppercase">(Foco no Plano Black)</span></h3>
+                        <p class="text-gray-600 leading-relaxed text-sm">
+                            Criar um motor próprio de captação digital regionalizado para vender o produto de maior margem (Plano Black), eliminando a dependência exclusiva das campanhas nacionais da matriz e buscando reduzir o alto Custo de Aquisição de Clientes (CAC) local.
+                        </p>
+                    </div>
+
+                    <!-- Card 2 -->
+                    <div class="bg-white p-8 md:p-10 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 transition-all duration-500 hover:-translate-y-3 hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:border-clientPrimary/30 reveal-up delay-100 relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-clientPrimary/20 to-transparent rounded-bl-full -z-10 transition-transform duration-500 group-hover:scale-125"></div>
+                        <div class="w-16 h-16 bg-clientPrimary/10 rounded-2xl flex items-center justify-center text-clientPrimary text-2xl mb-8 transform transition-transform duration-300 group-hover:rotate-6">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+                        <h3 class="text-xl font-extrabold mb-4 text-clientSecondary leading-tight">2. Fuga da Guerra de Preços</h3>
+                        <p class="text-gray-600 leading-relaxed text-sm mt-6">
+                            Reposicionar a comunicação das unidades para o conceito de "Experiência Premium", justificando o valor da mensalidade através da infraestrutura superior. O objetivo é parar de perder alunos para concorrentes estritamente low-cost locais (como Panobianco e Sky Fit) que brigam apenas por preço.
+                        </p>
+                    </div>
+
+                    <!-- Card 3 -->
+                    <div class="bg-white p-8 md:p-10 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 transition-all duration-500 hover:-translate-y-3 hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:border-clientPrimary/30 reveal-up delay-200 relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-clientPrimary/20 to-transparent rounded-bl-full -z-10 transition-transform duration-500 group-hover:scale-125"></div>
+                        <div class="w-16 h-16 bg-clientPrimary/10 rounded-2xl flex items-center justify-center text-clientPrimary text-2xl mb-8 transform transition-transform duration-300 group-hover:rotate-6">
+                            <i class="fa-solid fa-heart-pulse"></i>
+                        </div>
+                        <h3 class="text-xl font-extrabold mb-4 text-clientSecondary leading-tight">3. Retenção Preditiva <span class="text-xs text-gray-500 font-semibold block mt-1 tracking-wider uppercase">(Blindagem de Caixa)</span></h3>
+                        <p class="text-gray-600 leading-relaxed text-sm">
+                            Diagnosticar atritos invisíveis que geram evasão e estruturar um modelo ativo de retenção. A meta é salvar o aluno (que alega "falta de tempo") antes que ele inicie o burocrático processo de cancelamento, protegendo o faturamento recorrente da operação.
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Insights Semana 2 Section -->
+        <section class="bg-clientSecondary text-white py-24 px-6 relative overflow-hidden">
+            <!-- Background detail -->
+            <div class="absolute inset-0 opacity-5 bg-[radial-gradient(circle_at_bottom_left,_var(--tw-gradient-stops))] from-clientPrimary via-transparent to-transparent"></div>
+
+            <div class="max-w-6xl mx-auto relative z-10">
+                
+                <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-20 mb-16">
+                    <div class="w-full lg:w-5/12 reveal-left">
+                        <div class="inline-block bg-clientPrimary/10 text-clientPrimary font-bold px-4 py-1 rounded-full text-sm mb-4 border border-clientPrimary/20 tracking-wider">SEMANA 2</div>
+                        <h2 class="text-4xl md:text-5xl font-extrabold text-white mb-2 uppercase leading-tight">Insights</h2>
+                        <h3 class="text-2xl font-light text-gray-400 mb-8">Pesquisa de Mercado & Posicionamento</h3>
+                        
+                        <!-- Imagem Interativa -->
+                        <a href="https://www.smartfit.com.br/academias/av-31-de-marco" target="_blank" class="block rounded-2xl overflow-hidden shadow-2xl shadow-black/50 border border-gray-800 relative group cursor-pointer active:scale-[0.98] transition-all duration-300">
+                            <img src="https://images.unsplash.com/photo-1540497077202-7c8a3999166f?q=80&w=1470&auto=format&fit=crop" alt="Smart Fit Unidade" class="w-full h-64 object-cover transform transition duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex items-end p-6">
+                                <div class="transform translate-y-4 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 flex items-center justify-between w-full">
+                                    <span class="text-white font-bold text-lg">Av. 31 de Março</span>
+                                    <span class="bg-clientPrimary text-black w-10 h-10 rounded-full flex items-center justify-center shadow-lg"><i class="fa-solid fa-arrow-right -rotate-45"></i></span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="w-full lg:w-7/12 space-y-4 reveal-right delay-200">
+                        <div class="bg-white/5 backdrop-blur-sm p-6 md:p-8 rounded-2xl border border-white/10 hover:bg-white/10 hover:border-clientPrimary/50 transition-all duration-300 group">
+                            <h4 class="font-extrabold text-xl text-clientPrimary mb-3 flex items-center"><span class="bg-clientPrimary/20 text-clientPrimary w-8 h-8 rounded-lg flex items-center justify-center mr-3 text-sm group-hover:bg-clientPrimary group-hover:text-black transition-colors">1</span> Reposicionamento de Marca</h4>
+                            <p class="text-gray-300 text-sm leading-relaxed ml-11">A operação deve abandonar a briga comoditizada por preço baixo e assumir a Proposta Única de Valor (PUV) de "Ecossistema de Performance e Bem-Estar". O diferencial vendido não deve ser o acesso aos pesos, mas o suporte híbrido (botão Smart Help e zero estagiários) e as áreas de descompressão (Spa e massagem).</p>
+                        </div>
+                        <div class="bg-white/5 backdrop-blur-sm p-6 md:p-8 rounded-2xl border border-white/10 hover:bg-white/10 hover:border-clientPrimary/50 transition-all duration-300 group">
+                            <h4 class="font-extrabold text-xl text-clientPrimary mb-3 flex items-center"><span class="bg-clientPrimary/20 text-clientPrimary w-8 h-8 rounded-lg flex items-center justify-center mr-3 text-sm group-hover:bg-clientPrimary group-hover:text-black transition-colors">2</span> O Alvo Financeiro (Market Sizing)</h4>
+                            <p class="text-gray-300 text-sm leading-relaxed ml-11">O mercado realista e capturável (SOM) na região de Piracicaba é de 4.628 indivíduos focados exclusivamente em adesões do Plano Black. Isso representa uma meta de dominar 25% do mercado regional disponível para esse modelo.</p>
+                        </div>
+                        <div class="bg-white/5 backdrop-blur-sm p-6 md:p-8 rounded-2xl border border-white/10 hover:bg-white/10 hover:border-clientPrimary/50 transition-all duration-300 group">
+                            <h4 class="font-extrabold text-xl text-clientPrimary mb-3 flex items-center"><span class="bg-clientPrimary/20 text-clientPrimary w-8 h-8 rounded-lg flex items-center justify-center mr-3 text-sm group-hover:bg-clientPrimary group-hover:text-black transition-colors">3</span> O Tabuleiro da Concorrência</h4>
+                            <p class="text-gray-300 text-sm leading-relaxed ml-11">O mercado é pressionado pela BlueFit (que disputa diretamente a qualidade e estrutura premium) e pelas redes SkyFit e Panobianco (que lideram a guerra agressiva de preços). A grande brecha estratégica identificada é que todas as concorrentes sofrem com altas reclamações de burocracia no cancelamento. A Smart Fit pode vencer a concorrência oferecendo uma gestão de distratos transparente e acolhedora.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 mb-12">
+                    <div class="bg-gradient-to-br from-neutralDark to-black p-8 md:p-10 rounded-[2rem] shadow-2xl border border-gray-800 reveal-up delay-100 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-6 opacity-10"><i class="fa-solid fa-users text-8xl text-clientPrimary"></i></div>
+                        <h4 class="font-extrabold text-2xl text-white mb-6 flex items-center z-10 relative">
+                            <span class="bg-clientPrimary text-black w-10 h-10 rounded-xl flex items-center justify-center mr-4 text-sm shadow-lg shadow-clientPrimary/30">4</span>
+                            O Cliente Ideal 80/20
+                        </h4>
+                        <ul class="space-y-6 relative z-10 mt-8">
+                            <li class="bg-white/5 p-5 rounded-xl border border-white/10 hover:border-clientPrimary/30 transition-colors">
+                                <strong class="text-clientPrimary block text-lg mb-1"><i class="fa-solid fa-star mr-2 text-sm"></i>O Aspiracional de Status (18-35 anos)</strong>
+                                <p class="text-gray-400 text-sm leading-relaxed">Busca a academia para validação social e status. O gatilho de venda é o "passe livre" para 5 amigos, permitindo que ele atue como anfitrião e consolide seu pertencimento à rede.</p>
+                            </li>
+                            <li class="bg-white/5 p-5 rounded-xl border border-white/10 hover:border-clientPrimary/30 transition-colors">
+                                <strong class="text-clientPrimary block text-lg mb-1"><i class="fa-solid fa-briefcase mr-2 text-sm"></i>A Sobrevivente da Rotina (30-45 anos)</strong>
+                                <p class="text-gray-400 text-sm leading-relaxed">Trabalhadoras e mães com jornada dupla que enxergam a academia como seu único refúgio e válvula de escape. Os gatilhos de conversão são o ar-condicionado, o acolhimento técnico (botão Smart Help) e as cadeiras de massagem.</p>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-gradient-to-br from-neutralDark to-black p-8 md:p-10 rounded-[2rem] shadow-2xl border border-gray-800 flex flex-col justify-between reveal-up delay-200 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-6 opacity-10"><i class="fa-solid fa-bullhorn text-8xl text-clientPrimary"></i></div>
+                        <div class="relative z-10">
+                            <h4 class="font-extrabold text-2xl text-white mb-6 flex items-center">
+                                <span class="bg-clientPrimary text-black w-10 h-10 rounded-xl flex items-center justify-center mr-4 text-sm shadow-lg shadow-clientPrimary/30">5</span>
+                                Mídia e Canais de Tração
+                            </h4>
+                            <p class="text-gray-300 text-base leading-relaxed bg-white/5 p-6 rounded-xl border border-white/10">
+                                Atualmente, o investimento em mídia pago através da matriz resulta em um "voo às cegas", sem métricas claras de qual formato converte localmente. A estratégia recomendada é unificar as múltiplas contas de Instagram locais em uma só rede forte e iniciar campanhas de tráfego com vídeos próprios focados na infraestrutura regional.
+                            </p>
+                        </div>
+                        
+                        <div class="mt-10 relative z-10 text-center md:text-left">
+                            <a href="https://drive.google.com/file/d/1TqvbWOq3j1XcqDLu2fSIMit7-BTDHaNK/view?usp=sharing" target="_blank" class="btn-shine inline-flex items-center justify-center bg-clientPrimary text-clientSecondary font-extrabold py-5 px-8 rounded-xl hover:bg-yellow-400 active:scale-95 transition-all shadow-[0_10px_30px_rgba(255,182,18,0.4)] w-full text-base">
+                                <i class="fa-solid fa-folder-open mr-3 text-xl"></i> Acessar Material Completo
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Insights Semana 3 Section -->
+        <section class="bg-neutralLight py-24 px-6 relative">
+            <!-- Decorative dots -->
+            <div class="absolute top-20 left-10 w-24 h-24 bg-[radial-gradient(#e5e7eb_2px,transparent_2px)] [background-size:16px_16px]"></div>
+
+            <div class="max-w-6xl mx-auto relative z-10">
+                
+                <div class="text-center mb-16 reveal-up">
+                    <div class="inline-block bg-clientPrimary/20 text-yellow-700 font-bold px-4 py-1 rounded-full text-sm mb-4 tracking-wider">SEMANA 3</div>
+                    <h2 class="text-3xl md:text-5xl font-extrabold text-clientSecondary uppercase tracking-tight">Insights de Marketing</h2>
+                    <div class="w-24 h-1.5 bg-clientSecondary rounded-full mx-auto mt-6 mb-8"></div>
+                </div>
+
+                <div class="flex flex-col lg:flex-row-reverse items-center gap-12 lg:gap-16 mb-12">
+                    <div class="w-full lg:w-1/2 reveal-right">
+                        <div class="relative rounded-3xl overflow-hidden shadow-[0_20px_50px_rgb(0,0,0,0.15)] group">
+                            <img src="https://pictures.smartfit.com.br/21457/big/00addbdd0aaf15d6df3687132a44348d.jpeg?1757014661" alt="Diagnóstico Marketing" class="w-full object-cover transform transition duration-700 group-hover:scale-105">
+                            <div class="absolute inset-0 bg-clientSecondary/10 transition-colors group-hover:bg-transparent"></div>
+                        </div>
+                    </div>
+
+                    <div class="w-full lg:w-1/2 space-y-5 reveal-left delay-200">
+                        
+                        <div class="bg-white p-6 md:p-8 rounded-[1.5rem] shadow-sm hover:shadow-xl border border-gray-100 transition-all duration-300 flex items-start group hover:-translate-y-1">
+                            <div class="bg-red-50 text-red-500 p-4 rounded-xl mr-5 group-hover:bg-red-500 group-hover:text-white transition-all duration-300 shadow-sm">
+                                <i class="fa-solid fa-filter fa-fw text-2xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-extrabold text-lg text-clientSecondary mb-2">1. O Gargalo é Comercial, não de Mídia</h4>
+                                <p class="text-gray-600 text-sm leading-relaxed">O tráfego atrai interessados, mas o desperdício no balcão é alto (recentemente, 117 de 146 leads foram perdidos ou desqualificados). A ação mais rentável a curto prazo não é investir mais em anúncios, mas estruturar um fluxo de remarketing ativo para resgatar quem não comprou.</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 md:p-8 rounded-[1.5rem] shadow-sm hover:shadow-xl border border-gray-100 transition-all duration-300 flex items-start group hover:-translate-y-1">
+                            <div class="bg-yellow-50 text-yellow-600 p-4 rounded-xl mr-5 group-hover:bg-clientPrimary group-hover:text-black transition-all duration-300 shadow-sm">
+                                <i class="fa-solid fa-eye-slash fa-fw text-2xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-extrabold text-lg text-clientSecondary mb-2">2. Fim da Operação "Às Cegas"</h4>
+                                <p class="text-gray-600 text-sm leading-relaxed">A atual dependência das campanhas centralizadas da matriz tira a previsibilidade da unidade e já gerou Custos de Aquisição (CAC) insustentáveis de R$ 500,00 por aluno. A unidade precisa assumir o controle do tráfego pago localmente (Meta Ads) para ter métricas próprias.</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 md:p-8 rounded-[1.5rem] shadow-sm hover:shadow-xl border border-gray-100 transition-all duration-300 flex items-start group hover:-translate-y-1">
+                            <div class="bg-blue-50 text-blue-500 p-4 rounded-xl mr-5 group-hover:bg-blue-500 group-hover:text-white transition-all duration-300 shadow-sm">
+                                <i class="fa-solid fa-object-group fa-fw text-2xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-extrabold text-lg text-clientSecondary mb-2">3. Unificação das Redes Sociais</h4>
+                                <p class="text-gray-600 text-sm leading-relaxed">Manter um Instagram para cada unidade dilui a força da marca. Fundir os perfis de Piracicaba em uma única conta concentra o engajamento orgânico, reduz o esforço de gestão e cria um forte senso de comunidade local (ecossistema).</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 md:p-8 rounded-[1.5rem] shadow-sm hover:shadow-xl border border-gray-100 transition-all duration-300 flex items-start group hover:-translate-y-1">
+                            <div class="bg-green-50 text-green-500 p-4 rounded-xl mr-5 group-hover:bg-green-500 group-hover:text-white transition-all duration-300 shadow-sm">
+                                <i class="fa-solid fa-video fa-fw text-2xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-extrabold text-lg text-clientSecondary mb-2">4. Fuga do Leilão Nacional</h4>
+                                <p class="text-gray-600 text-sm leading-relaxed">Se a unidade impulsionar as mesmas artes promocionais da matriz, competirá contra ela mesma no leilão de anúncios, encarecendo o custo. A estratégia local deve focar exclusivamente em vídeos reais e humanizados, mostrando a infraestrutura física da cidade.</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="text-center mt-12 reveal-up delay-300">
+                    <a href="https://drive.google.com/file/d/1_Y4lin90fBbeGqHLdwla78ebTYa0hPX_/view?usp=drive_link" target="_blank" class="btn-shine inline-flex items-center justify-center bg-clientSecondary text-white font-extrabold py-5 px-10 rounded-xl hover:bg-gray-800 active:scale-95 transition-all shadow-[0_10px_20px_rgba(0,0,0,0.2)] w-full md:w-auto text-lg">
+                        <i class="fa-solid fa-file-pdf mr-3 text-clientPrimary text-xl"></i> Material Estratégico PDF
+                    </a>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Landing Page Section -->
+        <section class="bg-white py-24 px-6 relative">
+            <div class="max-w-5xl mx-auto text-center reveal-scale">
+                <div class="inline-flex items-center justify-center space-x-3 mb-8">
+                    <div class="w-12 h-1 bg-gray-200 rounded"></div>
+                    <h2 class="text-3xl md:text-4xl font-extrabold text-clientSecondary uppercase tracking-widest flex items-center">
+                        <i class="fa-solid fa-laptop-code text-clientPrimary mr-4 text-3xl"></i> Landing Page
+                    </h2>
+                    <div class="w-12 h-1 bg-gray-200 rounded"></div>
+                </div>
+                
+                <div class="bg-gray-50 p-3 md:p-5 rounded-[2rem] shadow-inner mb-10 border border-gray-100 relative group">
+                    <!-- Mac OS Fake Header -->
+                    <div class="flex items-center space-x-2 bg-gray-200 p-3 rounded-t-xl">
+                        <div class="w-3 h-3 rounded-full bg-red-400"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-400"></div>
+                    </div>
+                    <div class="overflow-hidden rounded-b-xl border border-gray-200 relative">
+                        <img src="https://github.com/v4silvaanchieta/smartfit-diagnostico/blob/main/Captura%20de%20tela%202026-05-04%20151241.png?raw=true" alt="Landing Page Preview" class="w-full h-auto object-cover object-top transition-transform duration-1000 group-hover:scale-[1.02]">
+                        <!-- Overlay on hover -->
+                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-sm">
+                            <span class="bg-white text-clientSecondary px-6 py-3 rounded-full font-bold shadow-2xl transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">Visualizar Protótipo</span>
+                        </div>
+                    </div>
+                </div>
+
+                <a href="https://ohebertfernandes.github.io/smartfit/" target="_blank" class="btn-shine inline-flex items-center justify-center bg-clientPrimary text-clientSecondary font-extrabold py-5 px-12 rounded-xl hover:bg-yellow-400 active:scale-95 transition-all shadow-[0_10px_30px_rgba(255,182,18,0.4)] text-lg">
+                    <i class="fa-solid fa-arrow-up-right-from-square mr-3"></i> Acessar Landing Page
+                </a>
+            </div>
+        </section>
+
+        <!-- Jornadas Section -->
+        <section class="bg-clientPrimary text-clientSecondary py-28 px-6 overflow-hidden relative">
+            <!-- Background pattern -->
+            <div class="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9IiMwMDAwMDAiLz48L3N2Zz4=')]"></div>
+
+            <div class="max-w-7xl mx-auto relative z-10">
+                
+                <div class="text-center mb-20 reveal-up">
+                    <h2 class="text-4xl md:text-6xl font-black uppercase mb-6 tracking-tighter drop-shadow-md">As Jornadas</h2>
+                    <p class="text-xl md:text-2xl font-semibold opacity-90 max-w-3xl mx-auto leading-relaxed">Mapeamento do funil estratégico integrado para <span class="border-b-4 border-black pb-1">maximizar a conversão.</span></p>
+                </div>
+
+                <!-- Labels Funil Desktop -->
+                <div class="hidden lg:flex justify-between items-center mb-8 px-6 font-black uppercase tracking-widest text-sm opacity-50 reveal-up delay-100">
+                    <div class="w-1/4 text-center">Origem / Tráfego</div>
+                    <div class="w-1/2 text-center">Meio / Engajamento</div>
+                    <div class="w-1/4 text-center">Fundo / Conversão</div>
+                </div>
+
+                <div class="space-y-8">
+                    
+                    <!-- Jornada A -->
+                    <div class="bg-white p-8 rounded-[2rem] shadow-2xl hover:shadow-[0_20px_50px_rgba(0,0,0,0.15)] transition-all duration-500 flex flex-col lg:flex-row items-stretch border-l-[12px] border-black reveal-left group">
+                        <div class="lg:w-1/3 mb-8 lg:mb-0 pr-0 lg:pr-8 border-b lg:border-b-0 lg:border-r border-gray-100 flex flex-col justify-center">
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="text-3xl font-black">Jornada A</h3>
+                                <span class="bg-gray-100 text-gray-500 text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider"><i class="fa-regular fa-calendar mr-1"></i> 1 - 7 Abr 2026</span>
+                            </div>
+                            <p class="text-base font-bold text-gray-400 uppercase tracking-wide mb-4">Monetização via WhatsApp</p>
+                            <div class="inline-flex bg-blue-50 text-blue-700 text-xs font-bold px-3 py-1.5 rounded-lg mb-4 self-start border border-blue-100">Público Morno (Já te Conhece)</div>
+                            <p class="text-sm text-gray-600 leading-relaxed font-medium"><strong>Estratégia:</strong> Captação do público com nível de consciência (morno) via anúncios Meta, direcionando para contato direto qualificado via WhatsApp auxiliado por Inteligência Artificial (SDR).</p>
+                        </div>
+                        <div class="lg:w-2/3 flex flex-col md:flex-row items-center justify-between w-full pt-4 lg:pt-0 pl-0 lg:pl-10">
+                            
+                            <div class="flex flex-col items-center text-center group-hover:-translate-y-2 transition-transform duration-300">
+                                <div class="w-20 h-20 bg-blue-50 text-blue-600 rounded-2xl shadow-sm flex items-center justify-center text-3xl mb-3 border border-blue-100"><i class="fa-brands fa-meta"></i></div>
+                                <span class="font-extrabold text-sm text-gray-800">Meta ADS</span>
+                            </div>
+                            
+                            <i class="fa-solid fa-chevron-right text-gray-200 text-2xl hidden md:block arrow-flow"></i>
+                            <i class="fa-solid fa-chevron-down text-gray-200 text-2xl md:hidden block my-4 arrow-flow"></i>
+                            
+                            <div class="flex flex-col items-center text-center group-hover:-translate-y-2 transition-transform duration-300 delay-100">
+                                <div class="w-20 h-20 bg-green-50 text-green-600 rounded-2xl shadow-sm flex items-center justify-center text-3xl mb-3 relative border border-green-100">
+                                    <i class="fa-brands fa-whatsapp"></i>
+                                    <span class="absolute -top-3 -right-3 bg-black text-clientPrimary text-[10px] font-black px-2 py-1 rounded-lg shadow-md animate-bounce">IA</span>
+                                </div>
+                                <span class="font-extrabold text-sm text-gray-800">SDR IA (WP)</span>
+                            </div>
+                            
+                            <i class="fa-solid fa-chevron-right text-gray-200 text-2xl hidden md:block arrow-flow"></i>
+                            <i class="fa-solid fa-chevron-down text-gray-200 text-2xl md:hidden block my-4 arrow-flow"></i>
+                            
+                            <div class="flex flex-col items-center text-center group-hover:-translate-y-2 transition-transform duration-300 delay-200">
+                                <div class="w-20 h-20 bg-clientPrimary/10 text-clientSecondary rounded-2xl shadow-sm flex items-center justify-center text-3xl mb-3 border border-clientPrimary/30"><i class="fa-solid fa-handshake"></i></div>
+                                <span class="font-extrabold text-sm text-gray-800">Visita / Venda</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Jornada B -->
+                    <div class="bg-white p-8 rounded-[2rem] shadow-2xl hover:shadow-[0_20px_50px_rgba(0,0,0,0.15)] transition-all duration-500 flex flex-col lg:flex-row items-stretch border-l-[12px] border-black reveal-right group delay-100">
+                        <div class="lg:w-1/3 mb-8 lg:mb-0 pr-0 lg:pr-8 border-b lg:border-b-0 lg:border-r border-gray-100 flex flex-col justify-center">
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="text-3xl font-black">Jornada B</h3>
+                                <span class="bg-gray-100 text-gray-500 text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider"><i class="fa-regular fa-calendar mr-1"></i> 8 - 14 Abr 2026</span>
+                            </div>
+                            <p class="text-base font-bold text-gray-400 uppercase tracking-wide mb-4">Monetização via Landing Page</p>
+                            <div class="inline-flex bg-blue-50 text-blue-700 text-xs font-bold px-3 py-1.5 rounded-lg mb-4 self-start border border-blue-100">Público Morno (Já te Conhece)</div>
+                            <p class="text-sm text-gray-600 leading-relaxed font-medium"><strong>Estratégia:</strong> Direcionamento de usuários da Meta para página de captura de conscientização. Leads entram no CRM e são acionados via IA no WhatsApp para agendamento.</p>
+                        </div>
+                        <div class="lg:w-2/3 flex flex-col md:flex-row items-center justify-between w-full pt-4 lg:pt-0 pl-0 lg:pl-6 overflow-x-auto pb-4 lg:pb-0">
+                            
+                            <div class="flex flex-col items-center text-center min-w-[70px] group-hover:-translate-y-1 transition-transform">
+                                <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-xl mb-2 border border-blue-100"><i class="fa-brands fa-meta"></i></div>
+                                <span class="font-bold text-[11px] text-gray-800 uppercase">Meta ADS</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-gray-200 text-sm hidden md:block mx-1 arrow-flow"></i>
+                            <i class="fa-solid fa-chevron-down text-gray-200 text-sm md:hidden block my-2 arrow-flow"></i>
+                            
+                            <div class="flex flex-col items-center text-center min-w-[70px] group-hover:-translate-y-1 transition-transform delay-75">
+                                <div class="w-14 h-14 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center text-xl mb-2 border border-purple-100"><i class="fa-solid fa-laptop-code"></i></div>
+                                <span class="font-bold text-[11px] text-gray-800 uppercase">Landing Page</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-gray-200 text-sm hidden md:block mx-1 arrow-flow"></i>
+                            <i class="fa-solid fa-chevron-down text-gray-200 text-sm md:hidden block my-2 arrow-flow"></i>
+                            
+                            <div class="flex flex-col items-center text-center min-w-[70px] group-hover:-translate-y-1 transition-transform delay-100">
+                                <div class="w-14 h-14 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center text-xl mb-2 border border-orange-100"><i class="fa-solid fa-database"></i></div>
+                                <span class="font-bold text-[11px] text-gray-800 uppercase">CRM</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-gray-200 text-sm hidden md:block mx-1 arrow-flow"></i>
+                            <i class="fa-solid fa-chevron-down text-gray-200 text-sm md:hidden block my-2 arrow-flow"></i>
+                            
+                            <div class="flex flex-col items-center text-center min-w-[70px] group-hover:-translate-y-1 transition-transform delay-150">
+                                <div class="w-14 h-14 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center text-xl mb-2 border border-green-100 relative">
+                                    <i class="fa-brands fa-whatsapp"></i>
+                                    <div class="absolute -top-2 -right-2 w-4 h-4 bg-black rounded-full flex items-center justify-center text-[8px] text-clientPrimary font-bold">IA</div>
+                                </div>
+                                <span class="font-bold text-[11px] text-gray-800 uppercase">SDR IA</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-gray-200 text-sm hidden md:block mx-1 arrow-flow"></i>
+                            <i class="fa-solid fa-chevron-down text-gray-200 text-sm md:hidden block my-2 arrow-flow"></i>
+                            
+                            <div class="flex flex-col items-center text-center min-w-[70px] group-hover:-translate-y-1 transition-transform delay-200">
+                                <div class="w-14 h-14 bg-clientPrimary/10 text-clientSecondary rounded-2xl flex items-center justify-center text-xl mb-2 border border-clientPrimary/30"><i class="fa-solid fa-handshake"></i></div>
+                                <span class="font-bold text-[11px] text-gray-800 uppercase">Visita</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Jornada C -->
+                    <div class="bg-white p-8 rounded-[2rem] shadow-2xl hover:shadow-[0_20px_50px_rgba(0,0,0,0.15)] transition-all duration-500 flex flex-col lg:flex-row items-stretch border-l-[12px] border-black reveal-left group delay-200">
+                        <div class="lg:w-1/3 mb-8 lg:mb-0 pr-0 lg:pr-8 border-b lg:border-b-0 lg:border-r border-gray-100 flex flex-col justify-center">
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="text-3xl font-black">Jornada C</h3>
+                                <span class="bg-gray-100 text-gray-500 text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider"><i class="fa-regular fa-calendar mr-1"></i> 15 - 21 Abr 2026</span>
+                            </div>
+                            <p class="text-base font-bold text-gray-400 uppercase tracking-wide mb-4">Retenção (MGM)</p>
+                            <div class="inline-flex bg-red-50 text-red-600 text-xs font-bold px-3 py-1.5 rounded-lg mb-4 self-start border border-red-100">Público Quente (Já Comprou)</div>
+                            <p class="text-sm text-gray-600 leading-relaxed font-medium"><strong>Estratégia:</strong> Campanha Member Get Member (Indique e Ganhe) via e-mail e WhatsApp para a base atual. Objetivo de indicação via landing page exclusiva.</p>
+                        </div>
+                        <div class="lg:w-2/3 flex flex-col md:flex-row items-center justify-between w-full pt-4 lg:pt-0 pl-0 lg:pl-6 overflow-x-auto pb-4 lg:pb-0">
+                            
+                            <div class="flex flex-col items-center text-center min-w-[80px] group-hover:-translate-y-1 transition-transform">
+                                <div class="flex space-x-1 mb-2">
+                                    <div class="w-10 h-10 bg-green-50 text-green-600 rounded-xl flex items-center justify-center border border-green-100"><i class="fa-brands fa-whatsapp"></i></div>
+                                    <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center border border-blue-100"><i class="fa-regular fa-envelope"></i></div>
+                                </div>
+                                <span class="font-bold text-[11px] text-gray-800 uppercase">WP + E-mail</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-gray-200 text-sm hidden md:block mx-1 arrow-flow"></i>
+                            <i class="fa-solid fa-chevron-down text-gray-200 text-sm md:hidden block my-2 arrow-flow"></i>
+                            
+                            <div class="flex flex-col items-center text-center min-w-[70px] group-hover:-translate-y-1 transition-transform delay-75">
+                                <div class="w-14 h-14 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center text-xl mb-2 border border-purple-100"><i class="fa-solid fa-users"></i></div>
+                                <span class="font-bold text-[11px] text-gray-800 uppercase">LP Indicação</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-gray-200 text-sm hidden md:block mx-1 arrow-flow"></i>
+                            <i class="fa-solid fa-chevron-down text-gray-200 text-sm md:hidden block my-2 arrow-flow"></i>
+                            
+                            <div class="flex flex-col items-center text-center min-w-[70px] group-hover:-translate-y-1 transition-transform delay-100">
+                                <div class="w-14 h-14 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center text-xl mb-2 border border-orange-100"><i class="fa-solid fa-database"></i></div>
+                                <span class="font-bold text-[11px] text-gray-800 uppercase">CRM</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-gray-200 text-sm hidden md:block mx-1 arrow-flow"></i>
+                            <i class="fa-solid fa-chevron-down text-gray-200 text-sm md:hidden block my-2 arrow-flow"></i>
+                            
+                            <div class="flex flex-col items-center text-center min-w-[70px] group-hover:-translate-y-1 transition-transform delay-150">
+                                <div class="w-14 h-14 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center text-xl mb-2 border border-green-100"><i class="fa-brands fa-whatsapp"></i></div>
+                                <span class="font-bold text-[11px] text-gray-800 uppercase">Contato WP</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-gray-200 text-sm hidden md:block mx-1 arrow-flow"></i>
+                            <i class="fa-solid fa-chevron-down text-gray-200 text-sm md:hidden block my-2 arrow-flow"></i>
+                            
+                            <div class="flex flex-col items-center text-center min-w-[70px] group-hover:-translate-y-1 transition-transform delay-200">
+                                <div class="w-14 h-14 bg-clientPrimary/10 text-clientSecondary rounded-2xl flex items-center justify-center text-xl mb-2 border border-clientPrimary/30"><i class="fa-solid fa-handshake"></i></div>
+                                <span class="font-bold text-[11px] text-gray-800 uppercase">Visita</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Jornada D -->
+                    <div class="bg-white p-8 rounded-[2rem] shadow-2xl hover:shadow-[0_20px_50px_rgba(0,0,0,0.15)] transition-all duration-500 flex flex-col lg:flex-row items-stretch border-l-[12px] border-black reveal-right group delay-300">
+                        <div class="lg:w-1/3 mb-8 lg:mb-0 pr-0 lg:pr-8 border-b lg:border-b-0 lg:border-r border-gray-100 flex flex-col justify-center">
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="text-3xl font-black">Jornada D</h3>
+                                <span class="bg-gray-100 text-gray-500 text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider"><i class="fa-regular fa-calendar mr-1"></i> 22 Abr+ 2026</span>
+                            </div>
+                            <p class="text-base font-bold text-gray-400 uppercase tracking-wide mb-4">Monetização via Remarketing</p>
+                            <div class="inline-flex bg-red-50 text-red-600 text-xs font-bold px-3 py-1.5 rounded-lg mb-4 self-start border border-red-100">Público Quente (Já Comprou)</div>
+                            <p class="text-sm text-gray-600 leading-relaxed font-medium"><strong>Estratégia:</strong> Remarketing agressivo na Meta para ex-clientes ou upsells, conduzindo-os para um engajamento rápido com IA via WhatsApp para fechamento presencial.</p>
+                        </div>
+                        <div class="lg:w-2/3 flex flex-col md:flex-row items-center justify-between w-full pt-4 lg:pt-0 pl-0 lg:pl-6 overflow-x-auto pb-4 lg:pb-0">
+                            
+                            <div class="flex flex-col items-center text-center min-w-[70px] group-hover:-translate-y-1 transition-transform">
+                                <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-xl mb-2 border border-blue-100"><i class="fa-brands fa-meta"></i></div>
+                                <span class="font-bold text-[11px] text-gray-800 uppercase">Meta ADS</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-gray-200 text-sm hidden md:block mx-1 arrow-flow"></i>
+                            <i class="fa-solid fa-chevron-down text-gray-200 text-sm md:hidden block my-2 arrow-flow"></i>
+                            
+                            <div class="flex flex-col items-center text-center min-w-[70px] group-hover:-translate-y-1 transition-transform delay-75">
+                                <div class="w-14 h-14 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center text-xl mb-2 border border-green-100 relative">
+                                    <i class="fa-brands fa-whatsapp"></i>
+                                    <div class="absolute -top-2 -right-2 w-4 h-4 bg-black rounded-full flex items-center justify-center text-[8px] text-clientPrimary font-bold">IA</div>
+                                </div>
+                                <span class="font-bold text-[11px] text-gray-800 uppercase">SDR IA</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-gray-200 text-sm hidden md:block mx-1 arrow-flow"></i>
+                            <i class="fa-solid fa-chevron-down text-gray-200 text-sm md:hidden block my-2 arrow-flow"></i>
+                            
+                            <div class="flex flex-col items-center text-center min-w-[70px] group-hover:-translate-y-1 transition-transform delay-100">
+                                <div class="w-14 h-14 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center text-xl mb-2 border border-orange-100"><i class="fa-solid fa-database"></i></div>
+                                <span class="font-bold text-[11px] text-gray-800 uppercase">CRM</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-gray-200 text-sm hidden md:block mx-1 arrow-flow"></i>
+                            <i class="fa-solid fa-chevron-down text-gray-200 text-sm md:hidden block my-2 arrow-flow"></i>
+                            
+                            <div class="flex flex-col items-center text-center min-w-[70px] group-hover:-translate-y-1 transition-transform delay-150">
+                                <div class="w-14 h-14 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center text-xl mb-2 border border-green-100"><i class="fa-brands fa-whatsapp"></i></div>
+                                <span class="font-bold text-[11px] text-gray-800 uppercase">Contato WP</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-gray-200 text-sm hidden md:block mx-1 arrow-flow"></i>
+                            <i class="fa-solid fa-chevron-down text-gray-200 text-sm md:hidden block my-2 arrow-flow"></i>
+                            
+                            <div class="flex flex-col items-center text-center min-w-[70px] group-hover:-translate-y-1 transition-transform delay-200">
+                                <div class="w-14 h-14 bg-clientPrimary/10 text-clientSecondary rounded-2xl flex items-center justify-center text-xl mb-2 border border-clientPrimary/30"><i class="fa-solid fa-handshake"></i></div>
+                                <span class="font-bold text-[11px] text-gray-800 uppercase">Visita</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+
+                <div class="mt-16 bg-black text-white p-8 md:p-10 rounded-[2rem] border border-gray-800 text-center shadow-2xl reveal-up relative overflow-hidden">
+                    <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
+                    <div class="relative z-10">
+                        <div class="inline-flex items-center justify-center bg-clientPrimary/20 text-clientPrimary p-4 rounded-full mb-6">
+                            <i class="fa-solid fa-network-wired text-3xl"></i>
+                        </div>
+                        <h4 class="font-black text-3xl mb-4">Estratégia Integrada (Abril 2026)</h4>
+                        <p class="text-gray-300 text-lg max-w-3xl mx-auto leading-relaxed">As jornadas trabalham em sinergia escalando de públicos mornos a clientes fidelizados (MGM e Remarketing), unindo Meta Ads, automação no WhatsApp e conversão presencial.</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Forecast Section -->
+        <section class="bg-neutralLight py-24 px-6 relative">
+            <div class="max-w-5xl mx-auto text-center reveal-up">
+                <div class="inline-flex items-center justify-center space-x-3 mb-8">
+                    <div class="w-12 h-1 bg-gray-300 rounded"></div>
+                    <h2 class="text-3xl md:text-4xl font-extrabold text-clientSecondary uppercase tracking-widest flex items-center">
+                        <i class="fa-solid fa-chart-line text-clientPrimary mr-4 text-3xl"></i> Forecast / Projeção
+                    </h2>
+                    <div class="w-12 h-1 bg-gray-300 rounded"></div>
+                </div>
+                
+                <a href="https://docs.google.com/spreadsheets/d/1nM9bvoNmwUVYY9Wu1kzaHksj7Za_AANdSY1Ak36SZNo/edit?usp=sharing" target="_blank" class="block bg-gray-50 p-3 md:p-5 rounded-[2rem] shadow-inner mb-10 border border-gray-100 relative group cursor-pointer">
+                    <!-- Mac OS Fake Header -->
+                    <div class="flex items-center space-x-2 bg-gray-200 p-3 rounded-t-xl">
+                        <div class="w-3 h-3 rounded-full bg-red-400"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-400"></div>
+                    </div>
+                    <div class="overflow-hidden rounded-b-xl border border-gray-200 relative">
+                        <img src="https://github.com/v4silvaanchieta/smartfit-diagnostico/blob/main/image.png?raw=true" alt="Forecast Projeção" class="w-full h-auto object-cover object-top transition-transform duration-1000 group-hover:scale-[1.02]">
+                        <!-- Overlay on hover -->
+                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-sm">
+                            <span class="bg-white text-clientSecondary px-6 py-3 rounded-full font-bold shadow-2xl transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">Visualizar Planilha</span>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="https://docs.google.com/spreadsheets/d/1nM9bvoNmwUVYY9Wu1kzaHksj7Za_AANdSY1Ak36SZNo/edit?usp=sharing" target="_blank" class="btn-shine inline-flex items-center justify-center bg-clientSecondary text-white font-extrabold py-5 px-12 rounded-xl hover:bg-black active:scale-95 transition-all shadow-[0_10px_20px_rgba(0,0,0,0.2)] text-lg">
+                    <i class="fa-solid fa-table mr-3 text-clientPrimary text-xl"></i> Acessar Planilha Forecast
+                </a>
+            </div>
+        </section>
+
+        <!-- Mapa Estratégico & Welcome -->
+        <section class="bg-white py-32 px-6 text-center relative overflow-hidden">
+            <!-- Decoração de fundo -->
+            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl h-full bg-v4Red/5 blur-[100px] rounded-full -z-10"></div>
+            
+            <div class="max-w-4xl mx-auto">
+                
+                <div class="mb-24 p-10 md:p-14 bg-neutralLight/50 backdrop-blur-sm rounded-[3rem] border border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.05)] reveal-scale">
+                    <h3 class="text-2xl md:text-3xl font-extrabold text-clientSecondary mb-8 leading-tight">Acesse aqui todos os materiais do<br><span class="text-clientPrimary">Mapa Estratégico Digital:</span></h3>
+                    <a href="#" class="btn-shine inline-flex items-center justify-center bg-clientPrimary text-clientSecondary font-extrabold py-5 px-12 rounded-xl hover:bg-yellow-400 active:scale-95 transition-all shadow-[0_15px_30px_rgba(255,182,18,0.4)] text-lg w-full md:w-auto">
+                        <i class="fa-solid fa-layer-group mr-3 text-xl"></i> Acessar Pasta Completa
+                    </a>
+                </div>
+
+                <div class="mt-16 reveal-up delay-200">
+                    <i class="fa-solid fa-handshake-angle text-v4Red text-5xl mb-6 opacity-80"></i>
+                    <h2 class="text-5xl md:text-6xl lg:text-7xl font-black text-clientSecondary mb-6 tracking-tighter">WELCOME TO V4 COMPANY</h2>
+                    <div class="w-32 h-2 bg-v4Red mx-auto mt-6 mb-8 rounded-full shadow-[0_0_15px_rgba(229,9,20,0.5)]"></div>
+                    <p class="text-2xl md:text-3xl font-medium text-gray-500 uppercase tracking-widest leading-relaxed">
+                        Obrigado por<br>
+                        <span class="text-clientSecondary font-black drop-shadow-sm">abrir as portas para a V4 Company</span>
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer V4 -->
+    <footer class="bg-v4Red text-white py-10 px-6 relative z-10 shadow-[0_-10px_30px_rgba(229,9,20,0.3)]">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-center gap-6">
+            <span class="font-extrabold text-lg uppercase tracking-widest opacity-90">Produzido por:</span>
+            <img src="https://imgur.com/SU08Zb0.png" alt="Logo V4 Company Footer" class="h-10 object-contain drop-shadow-lg hover:scale-105 transition-transform">
+        </div>
+    </footer>
+
+    <!-- Scripts de Interação UX -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Lógica do Scroll Progress Bar e Glassmorphism Header
+            const progressBar = document.getElementById('progress-bar');
+            const header = document.getElementById('main-header');
+            
+            window.addEventListener('scroll', () => {
+                // Progresso
+                const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+                const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                const scrolled = (winScroll / height) * 100;
+                progressBar.style.width = scrolled + "%";
+                
+                // Header Glassmorphism ativo após rolar
+                if (winScroll > 50) {
+                    header.classList.add('glass-header', 'py-2');
+                    header.classList.remove('py-4', 'bg-white');
+                } else {
+                    header.classList.remove('glass-header', 'py-2');
+                    header.classList.add('py-4', 'bg-white');
+                }
+            });
+
+            // Lógica do Intersection Observer para Reveal Animations Dinâmicas
+            const revealElements = document.querySelectorAll('.reveal-up, .reveal-left, .reveal-right, .reveal-scale');
+            
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px 0px -10% 0px', // Aciona um pouco antes de aparecer totalmente
+                threshold: 0.1
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        // Descomente a linha abaixo se não quiser que a animação repita ao subir a página
+                        // observer.unobserve(entry.target); 
+                    }
+                });
+            }, observerOptions);
+
+            revealElements.forEach(el => {
+                observer.observe(el);
+            });
+        });
+    </script>
+</body>
+</html>
